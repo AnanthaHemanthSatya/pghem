@@ -17,6 +17,7 @@ import com.pgxplore.dto.response.FirebaseConfigResponse;
 import com.pgxplore.dto.response.GoogleAuthConfigResponse;
 import com.pgxplore.dto.response.GoogleLoginResponse;
 import com.pgxplore.exception.DuplicateResourceException;
+import com.pgxplore.exception.PortalAccessDeniedException;
 import com.pgxplore.exception.ResourceNotFoundException;
 import com.pgxplore.exception.ValidationException;
 import com.pgxplore.model.entity.PasswordResetToken;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -112,6 +114,33 @@ public class AuthServiceImpl implements AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
+
+        refreshTokenRepository.deleteByUser(user);
+        userFirestoreService.syncUser(user);
+        return buildAuthResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse privilegedLogin(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail().toLowerCase())
+                .orElseThrow(() -> new BadCredentialsException("Wrong Credentials"));
+
+        if (user.getAuthProvider() == AuthProvider.GOOGLE && user.getPassword() == null) {
+            throw new BadCredentialsException("Wrong Credentials");
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            throw new BadCredentialsException("Wrong Credentials");
+        }
+
+        if (user.getRole() != Role.ADMIN) {
+            throw new PortalAccessDeniedException();
+        }
 
         refreshTokenRepository.deleteByUser(user);
         userFirestoreService.syncUser(user);

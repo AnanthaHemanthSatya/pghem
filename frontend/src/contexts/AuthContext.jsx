@@ -11,6 +11,7 @@ import {
   ROLES,
   authenticate,
   canAccessAdminPanel,
+  canAccessPrivilegedLoginPortal,
   canApproveDeletion,
   canManageUsers,
   canRequestPGDeletion,
@@ -55,6 +56,33 @@ export function AuthProvider({ children }) {
         return { ok: true, session: fallback }
       }
       return { ok: false, error: 'Wrong Credentials' }
+    }
+  }, [])
+
+  const loginPrivilegedPortal = useCallback(async (email, password) => {
+    const denyPortal = () => ({ ok: false, portalRestriction: true })
+
+    try {
+      let next = await loginApi(email, password)
+      if (!canAccessPrivilegedLoginPortal(next.role)) {
+        clearSession()
+        setSession(null)
+        return denyPortal()
+      }
+      next = await syncUserDataAfterLogin(next)
+      setSession(next)
+      return { ok: true, session: next }
+    } catch {
+      const fallback = authenticate(email, password)
+      if (fallback && canAccessPrivilegedLoginPortal(fallback.role)) {
+        saveSession(fallback)
+        setSession(fallback)
+        return { ok: true, session: fallback }
+      }
+
+      clearSession()
+      setSession(null)
+      return denyPortal()
     }
   }, [])
 
@@ -142,13 +170,14 @@ export function AuthProvider({ children }) {
       staffNavLabel: getStaffNavLabel(role, session?.backendRole),
       staffPanelTitle: getStaffPanelTitle(role, session?.backendRole),
       login,
+      loginPrivilegedPortal,
       register,
       loginWithGoogle,
       loginWithGoogleDev,
       loginWithFirebase,
       logout,
     }
-  }, [session, bootstrapping, login, register, loginWithGoogle, loginWithGoogleDev, loginWithFirebase, logout])
+  }, [session, bootstrapping, login, loginPrivilegedPortal, register, loginWithGoogle, loginWithGoogleDev, loginWithFirebase, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

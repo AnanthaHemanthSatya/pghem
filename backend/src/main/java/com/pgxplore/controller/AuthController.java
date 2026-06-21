@@ -59,6 +59,13 @@ public class AuthController {
         return ApiResponse.success("Login successful", response);
     }
 
+    @PostMapping("/login/privileged")
+    @Operation(summary = "Login for the privileged admin portal (admin accounts only)")
+    public ApiResponse<AuthResponse> privilegedLogin(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.privilegedLogin(request);
+        return ApiResponse.success("Login successful", response);
+    }
+
     @GetMapping("/google/config")
     @Operation(summary = "Get Google Sign-In configuration for the frontend")
     public ApiResponse<GoogleAuthConfigResponse> getGoogleConfig() {

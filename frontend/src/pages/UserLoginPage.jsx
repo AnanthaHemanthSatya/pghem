@@ -27,6 +27,7 @@ export default function UserLoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const returnTo = location.state?.from || '/home'
+  const isOwnerPortal = location.state?.accountType === 'owner'
 
   if (session && isAccountUser) {
     return <Navigate to={returnTo} replace />
@@ -68,9 +69,11 @@ export default function UserLoginPage() {
 
       <div className="w-full max-w-md rounded-2xl border border-app bg-card p-8 shadow-sm">
         <BackToLandingButton label="Back" />
-        <h1 className="mt-4 text-2xl font-bold text-main">Sign In</h1>
+        <h1 className="mt-4 text-2xl font-bold text-main">{isOwnerPortal ? 'PG Owner Sign In' : 'Sign In'}</h1>
         <p className="mt-2 text-sm text-muted">
-          Sign in to save PGs, track recently viewed listings, and post reviews — all tied to your account.
+          {isOwnerPortal
+            ? 'Sign in to manage your PG listings, rooms, and owner dashboard.'
+            : 'Sign in to save PGs, track recently viewed listings, and post reviews — all tied to your account.'}
         </p>
 
         <div className="mt-6 flex justify-center">

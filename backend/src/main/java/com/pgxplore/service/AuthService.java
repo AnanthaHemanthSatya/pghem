@@ -20,6 +20,8 @@ public interface AuthService {
 
     AuthResponse login(LoginRequest request);
 
+    AuthResponse privilegedLogin(LoginRequest request);
+
     GoogleLoginResponse googleLogin(GoogleLoginRequest request);
 
     /** @deprecated Use {@link #googleLogin(GoogleLoginRequest)} */

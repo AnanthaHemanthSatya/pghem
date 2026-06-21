@@ -29,6 +29,28 @@ export async function loginApi(email, password) {
   return session
 }
 
+export async function loginPrivilegedApi(email, password) {
+  const data = await apiRequest('/api/auth/login/privileged', {
+    method: 'POST',
+    body: { email, password },
+    auth: false,
+  })
+
+  const session = {
+    id: String(data.userId),
+    name: data.name,
+    email: data.email,
+    role: mapBackendRole(data.role),
+    backendRole: data.role,
+    accessToken: data.accessToken || data.token,
+    refreshToken: data.refreshToken,
+    phone: '',
+  }
+
+  saveSession(session)
+  return session
+}
+
 export async function fetchGoogleAuthConfigApi() {
   return apiRequest('/api/auth/google/config', { auth: false })
 }

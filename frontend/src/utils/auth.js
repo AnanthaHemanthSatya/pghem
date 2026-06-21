@@ -66,6 +66,11 @@ export function canAccessAdminPanel(role) {
   return role === ROLES.ADMIN || role === ROLES.PRIVILEGED || role === ROLES.PG_OWNER
 }
 
+/** Admin login portal: developers and privileged staff only (not users or PG owners). */
+export function canAccessPrivilegedLoginPortal(role) {
+  return role === ROLES.ADMIN || role === ROLES.PRIVILEGED
+}
+
 export function canReviewRequests(role) {
   return role === ROLES.ADMIN || role === ROLES.PRIVILEGED || role === ROLES.PG_OWNER
 }

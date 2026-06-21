@@ -2,6 +2,7 @@ package com.pgxplore.exception.handler;
 
 import com.pgxplore.dto.response.ApiResponse;
 import com.pgxplore.exception.DuplicateResourceException;
+import com.pgxplore.exception.PortalAccessDeniedException;
 import com.pgxplore.exception.ResourceNotFoundException;
 import com.pgxplore.exception.ValidationException;
 import com.pgxplore.security.jwt.JwtExpiredException;
@@ -105,6 +106,15 @@ public class GlobalExceptionHandler {
         problem.setTitle("Method Not Allowed");
         problem.setProperty("timestamp", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(problem);
+    }
+
+    @ExceptionHandler(PortalAccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handlePortalAccessDenied(PortalAccessDeniedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "Access restricted");
+        problem.setTitle("Portal Access Denied");
+        problem.setProperty("code", "PORTAL_RESTRICTED");
+        problem.setProperty("timestamp", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
     }
 
     @ExceptionHandler({JwtExpiredException.class, BadCredentialsException.class})
