@@ -65,7 +65,18 @@ export default function EntryPage() {
         </span>
       ))}
 
-      <div className="absolute right-4 top-4 z-20">
+      <div className="absolute right-3 top-3 z-20 flex items-center gap-1.5 sm:right-4 sm:top-4 sm:gap-2">
+        {!session && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin-login')}
+            aria-label="Privileged Accounts login"
+            title="Privileged Accounts login"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-app bg-card/80 text-base text-muted backdrop-blur-sm transition hover:border-brand-300 hover:bg-card-muted hover:text-brand-700 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-white/25 dark:hover:text-brand-200"
+          >
+            <FiTool aria-hidden />
+          </button>
+        )}
         <ThemeToggle />
       </div>
 
@@ -150,7 +161,7 @@ export default function EntryPage() {
                   <FiLock />
                 </span>
                 <span className="flex-1">
-                  <span className="block text-base">User sign in</span>
+                  <span className="block text-base">Sign In</span>
                   <span className="block text-xs font-normal text-muted">
                     Save PGs, reviews &amp; history per account
                   </span>
@@ -169,21 +180,6 @@ export default function EntryPage() {
                 <span className="flex-1">
                   <span className="block text-base">Create account</span>
                   <span className="block text-xs font-normal text-muted">Register as a new user</span>
-                </span>
-                <FiArrowRight aria-hidden className="entry-option__arrow text-lg" />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/admin-login')}
-                className="entry-option entry-stagger border border-dashed border-brand-200 bg-white/70 text-brand-900 hover:border-brand-300 hover:bg-brand-50 dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                style={{ animationDelay: '1s' }}
-              >
-                <span className="entry-option__icon bg-brand-100 dark:bg-white/10" aria-hidden>
-                  <FiTool />
-                </span>
-                <span className="flex-1">
-                  <span className="block text-base">Privileged Accounts login</span>
-                  <span className="block text-xs font-normal text-muted">Privileged accounts team access</span>
                 </span>
                 <FiArrowRight aria-hidden className="entry-option__arrow text-lg" />
               </button>

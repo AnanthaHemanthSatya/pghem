@@ -79,7 +79,7 @@ export default function SharingConfigEditor({ value, onChange, error }) {
               </div>
 
               <div className="sharing-config-card__grid">
-                <label className="block text-sm sm:col-span-2">
+                <label className="admin-form-field-full block text-sm">
                   <span className="font-medium text-main">Sharing type</span>
                   <select
                     className="select-app mt-1 w-full"

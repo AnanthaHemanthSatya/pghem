@@ -347,7 +347,7 @@ export default function AdminPGFormPage() {
       <h2 className="admin-panel-title">{isEdit ? 'Edit PG Details' : 'Add New PG'}</h2>
 
       <div className="admin-form-grid">
-        <label className="block text-sm sm:col-span-2">
+        <label className="admin-form-field-full block text-sm">
           <span className="font-medium text-main">PG Name</span>
           <input className="input-app mt-1 w-full" value={form.name} onChange={(e) => set('name', e.target.value)} required />
         </label>
@@ -364,7 +364,7 @@ export default function AdminPGFormPage() {
           </p>
         ) : null}
         <div className="admin-form-grid mt-4">
-          <label className="block text-sm sm:col-span-2">
+          <label className="block text-sm">
             <span className="font-medium text-main">
               Owner name <span className="text-rose-600 dark:text-rose-400">*</span>
             </span>
@@ -379,7 +379,7 @@ export default function AdminPGFormPage() {
               required
             />
           </label>
-          <label className="block text-sm sm:col-span-2">
+          <label className="block text-sm">
             <span className="font-medium text-main">
               Owner phone <span className="text-rose-600 dark:text-rose-400">*</span>
             </span>
@@ -492,7 +492,7 @@ export default function AdminPGFormPage() {
       </label>
 
       <div className="admin-form-grid mt-4">
-        <label className="block text-sm sm:col-span-2">
+        <label className="admin-form-field-full block text-sm">
           <span className="font-medium text-main">Google Maps address</span>
           <input className="input-app mt-1 w-full" value={form.address} onChange={(e) => set('address', e.target.value)} />
         </label>
@@ -508,52 +508,54 @@ export default function AdminPGFormPage() {
 
       <div className="mt-4 space-y-3 rounded-xl border border-app bg-card-muted/50 p-4">
         <p className="text-sm font-medium text-main">Utilities & listing options</p>
-        <label className="block max-w-xs text-sm">
-          <span className={`font-medium ${hasFoodAmenity ? 'text-main' : 'text-muted'}`}>
-            Food availability
-          </span>
-          <select
-            className="select-app mt-1 w-full disabled:cursor-not-allowed disabled:opacity-60"
-            value={hasFoodAmenity ? form.foodAvailability : 'not_available'}
-            onChange={(e) => set('foodAvailability', e.target.value)}
-            disabled={!hasFoodAmenity}
-            aria-disabled={!hasFoodAmenity}
-          >
-            {FOOD_AVAILABILITY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {!hasFoodAmenity ? (
-            <span className="mt-1 block text-xs text-muted">
-              Select the Food amenity above to configure meal options.
+        <div className="admin-form-grid mt-3">
+          <label className="block text-sm">
+            <span className={`font-medium ${hasFoodAmenity ? 'text-main' : 'text-muted'}`}>
+              Food availability
             </span>
-          ) : null}
-        </label>
-        <div className="flex flex-wrap gap-4 text-sm">
-          <label className="flex cursor-pointer items-start gap-2">
-            <input
-              type="checkbox"
-              className="mt-0.5"
-              checked={form.currentBillIncluded}
-              onChange={(e) => set('currentBillIncluded', e.target.checked)}
-            />
-            <span>
-              <span className="font-medium text-main">Current bill included in rent</span>
-              <span className="mt-0.5 block text-xs text-muted">
-                Electricity / current charges are covered in the monthly rent.
+            <select
+              className="select-app mt-1 w-full disabled:cursor-not-allowed disabled:opacity-60"
+              value={hasFoodAmenity ? form.foodAvailability : 'not_available'}
+              onChange={(e) => set('foodAvailability', e.target.value)}
+              disabled={!hasFoodAmenity}
+              aria-disabled={!hasFoodAmenity}
+            >
+              {FOOD_AVAILABILITY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {!hasFoodAmenity ? (
+              <span className="mt-1 block text-xs text-muted">
+                Select the Food amenity above to configure meal options.
               </span>
-            </span>
+            ) : null}
           </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={form.featured} onChange={(e) => set('featured', e.target.checked)} />
-            Featured PG
-          </label>
+          <div className="flex flex-wrap items-start gap-4 text-sm sm:col-span-2 lg:col-span-2">
+            <label className="flex min-w-[14rem] flex-1 cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={form.currentBillIncluded}
+                onChange={(e) => set('currentBillIncluded', e.target.checked)}
+              />
+              <span>
+                <span className="font-medium text-main">Current bill included in rent</span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  Electricity / current charges are covered in the monthly rent.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-center gap-2 self-center">
+              <input type="checkbox" checked={form.featured} onChange={(e) => set('featured', e.target.checked)} />
+              Featured PG
+            </label>
+          </div>
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="admin-form-actions">
         <button type="submit" className="btn-primary" disabled={submitting}>
           {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Create PG'}
         </button>

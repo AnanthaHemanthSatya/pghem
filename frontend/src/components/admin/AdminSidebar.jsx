@@ -1,5 +1,5 @@
-import { NavLink, Link } from 'react-router-dom'
-import { FiBookmark, FiChevronLeft, FiChevronRight, FiExternalLink, FiGrid, FiHome, FiInbox, FiStar, FiTrendingUp, FiUsers } from 'react-icons/fi'
+import { NavLink } from 'react-router-dom'
+import { FiBookmark, FiChevronLeft, FiChevronRight, FiGrid, FiHome, FiInbox, FiStar, FiTrendingUp, FiUsers } from 'react-icons/fi'
 import { MdKingBed } from 'react-icons/md'
 import { useAdmin } from '../../contexts/AdminContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -12,6 +12,7 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleSidebar
   const pendingRequests = stats.pendingDeletionRequests || 0
 
   const links = [
+    { to: '/home', label: 'Home', icon: <FiHome aria-hidden /> },
     { to: '/admin', end: true, label: 'Dashboard', icon: <FiGrid aria-hidden /> },
     isOwner
       ? { to: '/admin/pgs', label: 'All PGs', icon: <FiHome aria-hidden /> }
@@ -64,16 +65,6 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleSidebar
         >
           {collapsed ? <FiChevronRight aria-hidden /> : <FiChevronLeft aria-hidden />}
         </button>
-
-        <Link
-          to="/home"
-          className="admin-sidebar__link mx-3 mb-2 border border-app bg-card-muted/50"
-          onClick={onClose}
-          title="Home"
-        >
-          <FiExternalLink aria-hidden />
-          <span className="admin-sidebar__link-label flex-1">Home</span>
-        </Link>
 
         <nav className="admin-sidebar__nav">
           {links.map((link) => (

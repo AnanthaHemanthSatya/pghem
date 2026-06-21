@@ -1,3 +1,12 @@
+html:has(.admin-layout) {
+  @apply h-full overflow-hidden;
+}
+
+html:has(.admin-layout) body,
+html:has(.admin-layout) #root {
+  @apply h-full overflow-hidden;
+}
+
 .admin-layout {
   @apply flex h-dvh overflow-hidden bg-stone-100 dark:bg-slate-950;
 }
@@ -89,7 +98,7 @@
 }
 
 .admin-content:has(.admin-form-page) {
-  @apply pb-2 md:pb-3;
+  @apply flex flex-col items-stretch justify-start overflow-y-auto overflow-x-hidden px-4 pt-4 pb-3 md:px-6 md:pt-6 md:pb-4;
 }
 
 .admin-content:has(.admin-page-fill) {
@@ -165,7 +174,7 @@
 }
 
 .admin-panel--fit {
-  @apply h-auto self-start;
+  @apply h-fit min-h-0 self-start;
 }
 
 .admin-overview-split {
@@ -302,15 +311,27 @@
 }
 
 .admin-form-grid {
-  @apply mt-4 grid gap-4 sm:grid-cols-2;
+  @apply mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.admin-form-field-full {
+  @apply sm:col-span-2 lg:col-span-3;
 }
 
 .admin-form-page {
-  @apply max-w-4xl;
+  @apply w-full max-w-none shrink-0 grow-0;
 }
 
 .admin-form-page .admin-panel {
   @apply mb-0;
+}
+
+.admin-form-page .admin-panel--fit {
+  @apply h-fit min-h-0 w-full flex-none self-stretch overflow-visible pb-3 md:pb-3;
+}
+
+.admin-form-actions {
+  @apply mt-6 flex flex-wrap gap-3 pb-0;
 }
 
 .admin-badge {
@@ -410,7 +431,7 @@
 }
 
 .sharing-config-card__grid {
-  @apply grid gap-4 sm:grid-cols-2;
+  @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3;
 }
 
 .sharing-type-chips {
@@ -442,7 +463,7 @@
 }
 
 .pg-image-manager__grid {
-  @apply mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4;
+  @apply mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5;
 }
 
 .pg-image-manager__card {
