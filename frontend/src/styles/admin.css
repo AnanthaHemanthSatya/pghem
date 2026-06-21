@@ -8,6 +8,7 @@ html:has(.admin-layout) #root {
 }
 
 .admin-layout {
+  --admin-header-height: 4rem;
   @apply flex h-dvh overflow-hidden bg-stone-100 dark:bg-slate-950;
 }
 
@@ -16,12 +17,12 @@ html:has(.admin-layout) #root {
 }
 
 .admin-sidebar__toggle {
-  @apply absolute top-[4.75rem] z-50 h-7 w-7 translate-x-1/2 items-center justify-center rounded-full border border-stone-200 bg-white text-sm text-stone-600 shadow-md transition hover:bg-stone-50 dark:border-slate-600 dark:bg-slate-900 dark:text-stone-300 dark:hover:bg-slate-800;
+  @apply absolute top-[var(--admin-header-height)] z-50 flex h-7 w-7 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-stone-200 bg-white text-sm text-stone-600 shadow-md transition hover:bg-stone-50 dark:border-slate-600 dark:bg-slate-900 dark:text-stone-300 dark:hover:bg-slate-800;
   right: 0;
 }
 
 .admin-sidebar--collapsed .admin-sidebar__toggle {
-  @apply lg:translate-x-1/2;
+  @apply lg:translate-x-1/2 lg:-translate-y-1/2;
 }
 
 .admin-sidebar--collapsed {
@@ -37,7 +38,7 @@ html:has(.admin-layout) #root {
 }
 
 .admin-sidebar__brand {
-  @apply flex items-center justify-center border-b border-stone-200 px-4 py-5 dark:border-slate-700;
+  @apply flex h-[var(--admin-header-height)] shrink-0 items-center justify-center border-b border-stone-200 px-4 dark:border-slate-700;
 }
 
 .admin-sidebar__brand-full {
@@ -49,7 +50,7 @@ html:has(.admin-layout) #root {
 }
 
 .admin-sidebar--collapsed .admin-sidebar__brand {
-  @apply lg:px-2 lg:py-4;
+  @apply lg:px-2;
 }
 
 .admin-sidebar--collapsed .admin-sidebar__brand-full {
@@ -90,7 +91,7 @@ html:has(.admin-layout) #root {
 }
 
 .admin-topbar {
-  @apply z-20 flex shrink-0 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 md:px-6;
+  @apply z-20 flex h-[var(--admin-header-height)] shrink-0 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900 md:px-6;
 }
 
 .admin-content {
