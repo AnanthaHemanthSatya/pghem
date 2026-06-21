@@ -18,6 +18,7 @@ const titles = {
   '/admin/rooms': 'Room Management',
   '/admin/requests': 'Deletion Requests',
   '/admin/users': 'User Management',
+  '/admin/owner-approvals': 'Owner Approval Management',
   '/admin/reviews': 'Reviews & Ratings',
   '/admin/analytics': 'Revenue Analytics',
   '/admin/notifications': 'Notifications',

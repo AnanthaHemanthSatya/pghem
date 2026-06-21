@@ -1,5 +1,5 @@
 import { apiRequest } from './client'
-import { ROLES, saveSession } from '../utils/auth'
+import { clearSession, ROLES, saveSession } from '../utils/auth'
 
 function mapBackendRole(role) {
   if (role === 'ADMIN') return ROLES.ADMIN
@@ -138,9 +138,28 @@ export async function registerApi(payload) {
       password: payload.password,
       phone: payload.phone,
       role: payload.role === 'owner' ? 'PG_OWNER' : 'USER',
+      pgName: payload.pgName,
+      address: payload.address,
     },
     auth: false,
   })
+
+  const accessToken = data.accessToken || data.token
+  const isOwnerSignup = payload.role === 'owner'
+  const isOwnerAccount = isOwnerSignup || data.role === 'PG_OWNER'
+  const isApprovedOwner = data.ownerApprovalStatus === 'APPROVED'
+
+  if (isOwnerAccount && !isApprovedOwner) {
+    clearSession()
+    return {
+      pendingOwnerApproval: true,
+      name: data.name,
+      email: data.email,
+      role: mapBackendRole(data.role),
+      backendRole: data.role,
+      ownerApprovalStatus: data.ownerApprovalStatus || 'PENDING',
+    }
+  }
 
   const session = {
     id: String(data.userId),
@@ -148,9 +167,10 @@ export async function registerApi(payload) {
     email: data.email,
     role: mapBackendRole(data.role),
     backendRole: data.role,
-    accessToken: data.accessToken || data.token,
+    accessToken,
     refreshToken: data.refreshToken,
     phone: payload.phone,
+    ownerApprovalStatus: data.ownerApprovalStatus,
   }
 
   saveSession(session)

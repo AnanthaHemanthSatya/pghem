@@ -6,6 +6,7 @@ import FirebaseGoogleButton from '../components/FirebaseGoogleButton'
 import PasswordInput from '../components/PasswordInput'
 import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../contexts/AuthContext'
+import { resolveOwnerApprovalBlock } from '../utils/auth'
 
 function AuthDivider() {
   return (
@@ -24,6 +25,7 @@ export default function UserLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [ownerBlock, setOwnerBlock] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
   const returnTo = location.state?.from || '/home'
@@ -37,13 +39,21 @@ export default function UserLoginPage() {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+    setOwnerBlock(null)
     const result = await login(email, password)
     setSubmitting(false)
     if (!result.ok) {
-      setError('Wrong Credentials')
+      const message = result.error || 'Wrong Credentials'
+      const approvalBlock = resolveOwnerApprovalBlock(message)
+      if (approvalBlock) {
+        setOwnerBlock(approvalBlock)
+        setPassword('')
+        return
+      }
+      setError(message)
       return
     }
-    navigate(returnTo, { replace: true })
+    navigate(isOwnerPortal ? '/admin' : returnTo, { replace: true })
   }
 
   const handleGoogleToken = async (idToken) => {
@@ -76,6 +86,27 @@ export default function UserLoginPage() {
             : 'Sign in to save PGs, track recently viewed listings, and post reviews — all tied to your account.'}
         </p>
 
+        {ownerBlock && (
+          <div
+            className={
+              ownerBlock.type === 'rejected'
+                ? 'mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/50 dark:bg-rose-950/40'
+                : 'mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/40'
+            }
+            role="alert"
+          >
+            <p
+              className={
+                ownerBlock.type === 'rejected'
+                  ? 'text-sm leading-relaxed text-rose-950 dark:text-rose-100'
+                  : 'text-sm leading-relaxed text-amber-950 dark:text-amber-100'
+              }
+            >
+              {ownerBlock.message}
+            </p>
+          </div>
+        )}
+
         <div className="mt-6 flex justify-center">
           <FirebaseGoogleButton
             disabled={submitting}
@@ -93,7 +124,10 @@ export default function UserLoginPage() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (ownerBlock) setOwnerBlock(null)
+              }}
               className="input-app mt-1 w-full"
               autoComplete="email"
             />
@@ -103,7 +137,10 @@ export default function UserLoginPage() {
             <PasswordInput
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (ownerBlock) setOwnerBlock(null)
+              }}
               autoComplete="current-password"
             />
           </label>

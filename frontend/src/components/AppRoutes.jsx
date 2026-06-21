@@ -15,6 +15,7 @@ import AdminRequestsPage from '../pages/admin/AdminRequestsPage'
 import AdminReviewsPage from '../pages/admin/AdminReviewsPage'
 import AdminRoomsPage from '../pages/admin/AdminRoomsPage'
 import AdminUsersPage from '../pages/admin/AdminUsersPage'
+import AdminOwnerApprovalsPage from '../pages/admin/AdminOwnerApprovalsPage'
 import CompanyDetailsPage from '../pages/CompanyDetailsPage'
 import EntryPage from '../pages/EntryPage'
 import HelpCenterPage from '../pages/HelpCenterPage'
@@ -74,6 +75,14 @@ export default function AppRoutes() {
         <Route path="pgs/:id" element={<AdminPGDetailPage />} />
         <Route path="rooms" element={<AdminRoomsPage />} />
         <Route path="requests" element={<AdminRequestsPage />} />
+        <Route
+          path="owner-approvals"
+          element={
+            <RequireRole allow={(auth) => auth.canManageUsers}>
+              <AdminOwnerApprovalsPage />
+            </RequireRole>
+          }
+        />
         <Route
           path="users"
           element={

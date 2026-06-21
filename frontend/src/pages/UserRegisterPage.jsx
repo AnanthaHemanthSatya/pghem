@@ -6,6 +6,7 @@ import FirebaseGoogleButton from '../components/FirebaseGoogleButton'
 import PasswordInput from '../components/PasswordInput'
 import ThemeToggle from '../components/ThemeToggle'
 import { useAuth } from '../contexts/AuthContext'
+import { OWNER_REGISTRATION_SUCCESS_MESSAGE } from '../utils/auth'
 
 const ACCOUNT_TYPES = [
   {
@@ -32,9 +33,12 @@ export default function UserRegisterPage() {
     email: '',
     password: '',
     phone: '',
+    pgName: '',
+    address: '',
   })
   const [fieldErrors, setFieldErrors] = useState({})
   const [error, setError] = useState('')
+  const [ownerPendingMessage, setOwnerPendingMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   if (session && isAccountUser) {
@@ -50,6 +54,7 @@ export default function UserRegisterPage() {
       return next
     })
     if (error) setError('')
+    if (ownerPendingMessage) setOwnerPendingMessage('')
   }
 
   const validate = ({ name, email, phone, password }) => {
@@ -97,6 +102,8 @@ export default function UserRegisterPage() {
       password: form.password,
       phone,
       role: form.accountType,
+      pgName: form.accountType === 'owner' ? form.pgName.trim() : undefined,
+      address: form.accountType === 'owner' ? form.address.trim() : undefined,
     })
     setSubmitting(false)
 
@@ -106,6 +113,11 @@ export default function UserRegisterPage() {
       } else {
         setError(result.error)
       }
+      return
+    }
+    if (result.pendingOwnerApproval) {
+      setOwnerPendingMessage(OWNER_REGISTRATION_SUCCESS_MESSAGE)
+      setForm((current) => ({ ...current, password: '' }))
       return
     }
     navigate(returnTo, { replace: true })
@@ -142,6 +154,24 @@ export default function UserRegisterPage() {
           {selectedAccountType.description}
         </p>
 
+        {ownerPendingMessage && (
+          <div
+            className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/40"
+            role="alert"
+          >
+            <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">{ownerPendingMessage}</p>
+            <Link
+              to="/login"
+              state={{ accountType: 'owner' }}
+              className="mt-4 inline-block text-sm font-medium text-brand-emphasis hover:underline"
+            >
+              Go to Owner Login
+            </Link>
+          </div>
+        )}
+
+        {!ownerPendingMessage && (
+          <>
         <div className="mt-6 flex justify-center">
           <FirebaseGoogleButton
             disabled={submitting}
@@ -172,6 +202,28 @@ export default function UserRegisterPage() {
               ))}
             </select>
           </label>
+          {form.accountType === 'owner' && (
+            <>
+              <label className="block text-sm">
+                <span className="font-medium text-main">PG name (optional)</span>
+                <input
+                  value={form.pgName}
+                  onChange={(e) => set('pgName', e.target.value)}
+                  className="input-app mt-1 w-full"
+                  placeholder="Your PG listing name"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-main">Address (optional)</span>
+                <input
+                  value={form.address}
+                  onChange={(e) => set('address', e.target.value)}
+                  className="input-app mt-1 w-full"
+                  placeholder="Area, Chennai"
+                />
+              </label>
+            </>
+          )}
           <label className="block text-sm">
             <span className="font-medium text-main">Full name</span>
             <input
@@ -243,6 +295,8 @@ export default function UserRegisterPage() {
             Sign in
           </Link>
         </p>
+          </>
+        )}
       </div>
     </div>
   )

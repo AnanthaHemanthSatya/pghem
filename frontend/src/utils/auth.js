@@ -30,6 +30,35 @@ export function formatRoleLabel(role) {
 
 export const SESSION_KEY = 'pgxplore_session'
 
+export const OWNER_REGISTRATION_SUCCESS_MESSAGE =
+  'Your PG Owner account has been created successfully and is awaiting approval from a Privileged Administrator. You will be able to access the Owner Portal once your account has been approved.'
+
+export const OWNER_PENDING_LOGIN_MESSAGE =
+  'Your account is currently awaiting approval from a Privileged Administrator. Please wait until your account has been reviewed and approved.'
+
+export const OWNER_REJECTED_LOGIN_MESSAGE =
+  'Your account registration has been rejected. Please contact support for further assistance.'
+
+/** Map API/login errors to owner approval block UI (pending or rejected). */
+export function resolveOwnerApprovalBlock(message) {
+  if (!message) return null
+  const normalized = String(message).trim()
+  if (
+    normalized === OWNER_PENDING_LOGIN_MESSAGE ||
+    normalized.toLowerCase().includes('awaiting approval')
+  ) {
+    return { type: 'pending', message: OWNER_PENDING_LOGIN_MESSAGE }
+  }
+  if (
+    normalized === OWNER_REJECTED_LOGIN_MESSAGE ||
+    normalized.toLowerCase().includes('registration has been rejected') ||
+    normalized.toLowerCase().includes('was not approved')
+  ) {
+    return { type: 'rejected', message: OWNER_REJECTED_LOGIN_MESSAGE }
+  }
+  return null
+}
+
 /**
  * Demo accounts: 1 admin (full management), 4 protected privileged users
  * (review/approve deletion requests, cannot be removed by normal users),
@@ -82,6 +111,11 @@ export function canApproveDeletion(role) {
 
 export function canManageUsers(role) {
   return role === ROLES.ADMIN
+}
+
+/** True when the session has a live backend ADMIN JWT (not offline demo login). */
+export function hasBackendAdminAccess(session) {
+  return Boolean(session?.accessToken && session?.backendRole === 'ADMIN')
 }
 
 export function canRequestPGDeletion(role) {

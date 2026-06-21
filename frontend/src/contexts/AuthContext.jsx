@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   loginApi,
+  loginPrivilegedApi,
   loginWithFirebaseApi,
   loginWithGoogleApi,
   loginWithGoogleDevApi,
@@ -11,7 +12,6 @@ import {
   ROLES,
   authenticate,
   canAccessAdminPanel,
-  canAccessPrivilegedLoginPortal,
   canApproveDeletion,
   canManageUsers,
   canRequestPGDeletion,
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
         setSession(fallback)
         return { ok: true, session: fallback }
       }
-      return { ok: false, error: 'Wrong Credentials' }
+      return { ok: false, error: err?.message || 'Wrong Credentials' }
     }
   }, [])
 
@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
 
     try {
       let next = await loginApi(email, password)
-      if (!canAccessPrivilegedLoginPortal(next.role)) {
+      if (next.backendRole !== 'ADMIN') {
         clearSession()
         setSession(null)
         return denyPortal()
@@ -73,22 +73,28 @@ export function AuthProvider({ children }) {
       setSession(next)
       return { ok: true, session: next }
     } catch {
-      const fallback = authenticate(email, password)
-      if (fallback && canAccessPrivilegedLoginPortal(fallback.role)) {
-        saveSession(fallback)
-        setSession(fallback)
-        return { ok: true, session: fallback }
+      try {
+        let next = await loginPrivilegedApi(email, password)
+        next = await syncUserDataAfterLogin(next)
+        setSession(next)
+        return { ok: true, session: next }
+      } catch {
+        clearSession()
+        setSession(null)
+        return denyPortal()
       }
-
-      clearSession()
-      setSession(null)
-      return denyPortal()
     }
   }, [])
 
   const register = useCallback(async (payload) => {
     try {
-      let next = await registerApi(payload)
+      const result = await registerApi(payload)
+      if (result?.pendingOwnerApproval) {
+        clearSession()
+        setSession(null)
+        return { ok: true, pendingOwnerApproval: true, session: result }
+      }
+      let next = result
       next = await syncUserDataAfterLogin(next)
       setSession(next)
       return { ok: true, session: next }

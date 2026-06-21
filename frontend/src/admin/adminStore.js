@@ -23,6 +23,10 @@ function write(state) {
 function migrateState(state) {
   const next = { ...state }
   next.deletionRequests = Array.isArray(next.deletionRequests) ? next.deletionRequests : []
+  next.ownerApprovals = Array.isArray(next.ownerApprovals) ? next.ownerApprovals : []
+  if (!next.ownerApprovals.length) {
+    next.ownerApprovals = createSeedState(next.pgs?.length ? next.pgs : pgListings).ownerApprovals
+  }
 
   const users = Array.isArray(next.users) ? [...next.users] : []
   const existingEmails = new Set(users.map((u) => u.email?.toLowerCase()))
@@ -78,6 +82,7 @@ export function computeDashboardStats(state) {
     totalRevenue: revenue,
     pendingBookings: bookings.filter((b) => b.status === 'pending').length,
     pendingDeletionRequests: (state.deletionRequests || []).filter((r) => r.status === 'pending').length,
+    pendingOwnerApprovals: (state.ownerApprovals || []).filter((o) => o.status === 'pending').length,
   }
 }
 

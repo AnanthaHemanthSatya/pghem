@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useAuth } from './AuthContext'
+import { fetchAdminStatsApi } from '../api/admin'
 import {
   createPgApi,
   deletePgApi,
@@ -19,7 +20,7 @@ import {
 } from '../admin/adminStore'
 import { createSeedState, ROOM_TYPES } from '../admin/seedData'
 import { pgListings } from '../data/pgData'
-import { canApproveDeletion, canModifyAccount, getSession, ROLES } from '../utils/auth'
+import { canApproveDeletion, canModifyAccount, getSession, hasBackendAdminAccess, ROLES } from '../utils/auth'
 import { getPGByIdFromListings, getSimilarPGsFromListings } from '../utils/listingsHelpers'
 
 const AdminContext = createContext(null)
@@ -42,6 +43,7 @@ export function AdminProvider({ children }) {
   const [listingsLoading, setListingsLoading] = useState(true)
   const [listingsError, setListingsError] = useState(null)
   const [pgCache, setPgCache] = useState({})
+  const [apiStats, setApiStats] = useState(null)
 
   useEffect(() => {
     const onStorage = (event) => {
@@ -113,6 +115,23 @@ export function AdminProvider({ children }) {
     refreshListings()
   }, [refreshListings, listingsSessionKey, bootstrapping])
 
+  const refreshAdminStats = useCallback(async () => {
+    if (!hasBackendAdminAccess(session)) {
+      setApiStats(null)
+      return
+    }
+    try {
+      setApiStats(await fetchAdminStatsApi())
+    } catch {
+      setApiStats(null)
+    }
+  }, [session])
+
+  useEffect(() => {
+    if (bootstrapping) return
+    refreshAdminStats()
+  }, [refreshAdminStats, bootstrapping])
+
   const listings = useMemo(() => apiListings, [apiListings])
 
   const getPGById = useCallback(
@@ -154,7 +173,13 @@ export function AdminProvider({ children }) {
     })
   }, [])
 
-  const stats = useMemo(() => computeDashboardStats(state), [state])
+  const stats = useMemo(() => {
+    const base = computeDashboardStats(state)
+    if (apiStats && typeof apiStats.pendingOwnerApprovals === 'number') {
+      return { ...base, pendingOwnerApprovals: apiStats.pendingOwnerApprovals }
+    }
+    return base
+  }, [state, apiStats])
 
   const addPG = useCallback(
     async (pg) => {
@@ -419,6 +444,7 @@ export function AdminProvider({ children }) {
     listingsLoading,
     listingsError,
     refreshListings,
+    refreshAdminStats,
     getPGById,
     loadPGById,
     getSimilarPGs,

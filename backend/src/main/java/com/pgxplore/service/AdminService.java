@@ -1,5 +1,6 @@
 package com.pgxplore.service;
 
+import com.pgxplore.dto.response.OwnerApprovalResponse;
 import com.pgxplore.dto.response.PgListingResponse;
 import com.pgxplore.dto.response.UserSummaryResponse;
 
@@ -17,4 +18,10 @@ public interface AdminService {
     void deleteListing(Long listingId);
 
     Map<String, Long> getDashboardStats();
+
+    List<OwnerApprovalResponse> getOwnerApprovals();
+
+    OwnerApprovalResponse approveOwner(Long ownerId);
+
+    OwnerApprovalResponse rejectOwner(Long ownerId);
 }

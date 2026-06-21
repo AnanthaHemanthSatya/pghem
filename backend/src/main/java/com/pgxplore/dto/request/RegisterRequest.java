@@ -31,4 +31,12 @@ public class RegisterRequest {
     @NotNull(message = "Role is required")
     @Schema(example = "USER", allowableValues = {"USER", "PG_OWNER"})
     private Role role;
+
+    @Size(max = 255)
+    @Schema(description = "PG name provided during owner registration")
+    private String pgName;
+
+    @Size(max = 500)
+    @Schema(description = "Business address provided during owner registration")
+    private String address;
 }

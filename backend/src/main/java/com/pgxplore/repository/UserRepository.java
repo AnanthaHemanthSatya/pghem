@@ -1,6 +1,7 @@
 package com.pgxplore.repository;
 
 import com.pgxplore.model.entity.User;
+import com.pgxplore.model.enums.OwnerApprovalStatus;
 import com.pgxplore.model.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     boolean existsByPhone(String phone);
     List<User> findByRole(Role role);
+    List<User> findByRoleOrderByCreatedAtDesc(Role role);
+    long countByRoleAndOwnerApprovalStatus(Role role, OwnerApprovalStatus status);
 }

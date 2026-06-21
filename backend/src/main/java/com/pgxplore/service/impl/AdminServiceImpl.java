@@ -1,13 +1,15 @@
 package com.pgxplore.service.impl;
 
+import com.pgxplore.dto.response.OwnerApprovalResponse;
 import com.pgxplore.dto.response.PgListingResponse;
 import com.pgxplore.dto.response.UserSummaryResponse;
 import com.pgxplore.exception.ResourceNotFoundException;
 import com.pgxplore.exception.ValidationException;
 import com.pgxplore.mapper.PgListingMapper;
 import com.pgxplore.mapper.UserMapper;
-import com.pgxplore.model.enums.Role;
 import com.pgxplore.model.entity.User;
+import com.pgxplore.model.enums.OwnerApprovalStatus;
+import com.pgxplore.model.enums.Role;
 import com.pgxplore.repository.FavoriteRepository;
 import com.pgxplore.repository.InquiryRepository;
 import com.pgxplore.repository.PgListingRepository;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +111,62 @@ public class AdminServiceImpl implements AdminService {
         stats.put("totalListings", pgListingRepository.count());
         stats.put("totalReviews", reviewRepository.count());
         stats.put("totalInquiries", inquiryRepository.count());
+        stats.put(
+                "pendingOwnerApprovals",
+                userRepository.countByRoleAndOwnerApprovalStatus(Role.PG_OWNER, OwnerApprovalStatus.PENDING));
         return stats;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OwnerApprovalResponse> getOwnerApprovals() {
+        return userRepository.findByRoleOrderByCreatedAtDesc(Role.PG_OWNER).stream()
+                .map(this::toOwnerApprovalResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public OwnerApprovalResponse approveOwner(Long ownerId) {
+        User owner = getOwnerForApprovalAction(ownerId);
+        owner.setOwnerApprovalStatus(OwnerApprovalStatus.APPROVED);
+        owner.setVerified(true);
+        return toOwnerApprovalResponse(userRepository.save(owner));
+    }
+
+    @Override
+    @Transactional
+    public OwnerApprovalResponse rejectOwner(Long ownerId) {
+        User owner = getOwnerForApprovalAction(ownerId);
+        owner.setOwnerApprovalStatus(OwnerApprovalStatus.REJECTED);
+        return toOwnerApprovalResponse(userRepository.save(owner));
+    }
+
+    private User getOwnerForApprovalAction(Long ownerId) {
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
+        if (owner.getRole() != Role.PG_OWNER) {
+            throw new ValidationException("Only PG owner accounts can be approved or rejected");
+        }
+        return owner;
+    }
+
+    private OwnerApprovalResponse toOwnerApprovalResponse(User user) {
+        OwnerApprovalStatus status = user.getOwnerApprovalStatus() != null
+                ? user.getOwnerApprovalStatus()
+                : OwnerApprovalStatus.PENDING;
+        return OwnerApprovalResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .pgName(user.getOwnerPgName())
+                .address(user.getOwnerAddress())
+                .status(status)
+                .registrationDate(user.getCreatedAt())
+                .verificationDocuments(user.getOwnerVerificationDocs() != null
+                        ? user.getOwnerVerificationDocs()
+                        : Collections.emptyList())
+                .build();
     }
 }

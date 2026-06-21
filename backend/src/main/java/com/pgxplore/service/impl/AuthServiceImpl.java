@@ -24,6 +24,7 @@ import com.pgxplore.model.entity.PasswordResetToken;
 import com.pgxplore.model.entity.RefreshToken;
 import com.pgxplore.model.entity.User;
 import com.pgxplore.model.enums.AuthProvider;
+import com.pgxplore.model.enums.OwnerApprovalStatus;
 import com.pgxplore.model.enums.Role;
 import com.pgxplore.repository.PasswordResetTokenRepository;
 import com.pgxplore.repository.RefreshTokenRepository;
@@ -54,6 +55,17 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
+    public static final String OWNER_REGISTRATION_SUCCESS_MESSAGE =
+            "Your PG Owner account has been created successfully and is awaiting approval from a Privileged Administrator. "
+                    + "You will be able to access the Owner Portal once your account has been approved.";
+
+    public static final String OWNER_PENDING_LOGIN_MESSAGE =
+            "Your account is currently awaiting approval from a Privileged Administrator. "
+                    + "Please wait until your account has been reviewed and approved.";
+
+    public static final String OWNER_REJECTED_LOGIN_MESSAGE =
+            "Your account registration has been rejected. Please contact support for further assistance.";
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -96,8 +108,18 @@ public class AuthServiceImpl implements AuthService {
                 .verified(false)
                 .build();
 
+        if (request.getRole() == Role.PG_OWNER) {
+            user.setOwnerApprovalStatus(OwnerApprovalStatus.PENDING);
+            user.setOwnerPgName(trimToNull(request.getPgName()));
+            user.setOwnerAddress(trimToNull(request.getAddress()));
+            user = userRepository.save(user);
+            userFirestoreService.syncUser(user);
+            return buildPendingOwnerRegistrationResponse(user);
+        }
+
         user = userRepository.save(user);
         userFirestoreService.syncUser(user);
+
         return buildAuthResponse(user);
     }
 
@@ -114,6 +136,8 @@ public class AuthServiceImpl implements AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
+
+        assertOwnerMayLogin(user);
 
         refreshTokenRepository.deleteByUser(user);
         userFirestoreService.syncUser(user);
@@ -137,6 +161,8 @@ public class AuthServiceImpl implements AuthService {
         } catch (org.springframework.security.core.AuthenticationException ex) {
             throw new BadCredentialsException("Wrong Credentials");
         }
+
+        assertOwnerMayLogin(user);
 
         if (user.getRole() != Role.ADMIN) {
             throw new PortalAccessDeniedException();
@@ -296,8 +322,40 @@ public class AuthServiceImpl implements AuthService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
+                .ownerApprovalStatus(user.getOwnerApprovalStatus())
                 .profilePicture(user.getProfilePicture())
                 .build();
+    }
+
+    private AuthResponse buildPendingOwnerRegistrationResponse(User user) {
+        return AuthResponse.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .ownerApprovalStatus(user.getOwnerApprovalStatus())
+                .build();
+    }
+
+    private void assertOwnerMayLogin(User user) {
+        if (user.getRole() != Role.PG_OWNER) {
+            return;
+        }
+        OwnerApprovalStatus status = user.getOwnerApprovalStatus();
+        if (status == OwnerApprovalStatus.REJECTED) {
+            throw new ValidationException(OWNER_REJECTED_LOGIN_MESSAGE);
+        }
+        if (status != OwnerApprovalStatus.APPROVED) {
+            throw new ValidationException(OWNER_PENDING_LOGIN_MESSAGE);
+        }
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private GoogleLoginRequest toGoogleLoginRequest(GoogleAuthRequest request) {

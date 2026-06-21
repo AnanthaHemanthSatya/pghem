@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { FiBookmark, FiChevronLeft, FiChevronRight, FiGrid, FiHome, FiInbox, FiStar, FiTrendingUp, FiUsers } from 'react-icons/fi'
+import { FiBookmark, FiChevronLeft, FiChevronRight, FiGrid, FiHome, FiInbox, FiStar, FiTrendingUp, FiUserCheck, FiUsers } from 'react-icons/fi'
 import { MdKingBed } from 'react-icons/md'
 import { useAdmin } from '../../contexts/AdminContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -10,6 +10,7 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleSidebar
   const { stats } = useAdmin()
   const isOwner = isBackendPgOwner(session)
   const pendingRequests = stats.pendingDeletionRequests || 0
+  const pendingOwnerApprovals = stats.pendingOwnerApprovals || 0
 
   const links = [
     { to: '/home', label: 'Home', icon: <FiHome aria-hidden /> },
@@ -26,6 +27,12 @@ export default function AdminSidebar({ open, onClose, collapsed, onToggleSidebar
       badge: pendingRequests || null,
     },
     canManageUsers && { to: '/admin/users', label: 'Users', icon: <FiUsers aria-hidden /> },
+    canManageUsers && {
+      to: '/admin/owner-approvals',
+      label: 'Owner Approval Requests',
+      icon: <FiUserCheck aria-hidden />,
+      badge: pendingOwnerApprovals || null,
+    },
     { to: '/admin/reviews', label: 'Reviews', icon: <FiStar aria-hidden /> },
     { to: '/admin/analytics', label: 'Analytics', icon: <FiTrendingUp aria-hidden /> },
   ].filter(Boolean)

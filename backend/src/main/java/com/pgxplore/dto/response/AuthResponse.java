@@ -1,6 +1,7 @@
 package com.pgxplore.dto.response;
 
 import com.pgxplore.model.enums.Role;
+import com.pgxplore.model.enums.OwnerApprovalStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,8 @@ public class AuthResponse {
     private String name;
     private String email;
     private Role role;
+
+    private OwnerApprovalStatus ownerApprovalStatus;
 
     @Schema(description = "Profile picture URL (Google users)")
     private String profilePicture;

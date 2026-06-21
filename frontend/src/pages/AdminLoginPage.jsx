@@ -57,18 +57,11 @@ export default function AdminLoginPage() {
           >
             <p className="text-sm leading-relaxed text-amber-950 dark:text-amber-100">
               This portal is reserved for developers and privileged administrators only. If you are a
-              User or PG Owner, please use the appropriate login portal below.
+              User or PG Owner, please use the standard Sign In page.
             </p>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Link to="/login" className="btn-primary flex-1 text-center text-sm">
-                Go to User Login
-              </Link>
-              <Link
-                to="/login"
-                state={{ accountType: 'owner' }}
-                className="btn-secondary flex-1 text-center text-sm"
-              >
-                Go to Owner Login
+            <div className="mt-4 flex justify-center">
+              <Link to="/login" className="btn-primary text-center text-sm">
+                Go to Sign In
               </Link>
             </div>
           </div>
@@ -101,7 +94,7 @@ export default function AdminLoginPage() {
             />
           </label>
           <button type="submit" className="btn-primary w-full" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Login'}
+            {submitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 
